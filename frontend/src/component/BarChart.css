@@ -1,0 +1,25 @@
+.bar-chart-container {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+}
+
+.bar-chart-wrapper {
+  position: relative;
+  height: 350px;
+  margin: 15px 0;
+}
+
+.bar-chart-title {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: 600;
+}
+
+
+.bar-chart-container canvas {
+  max-height: 100%;
+  border-radius: 8px;
+}

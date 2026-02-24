@@ -1,0 +1,30 @@
+.pie-chart-container {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pie-chart-wrapper {
+  position: relative;
+  height: 350px;
+  width: 100%;
+  max-width: 500px;
+  margin: 15px auto;
+}
+
+.pie-chart-title {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: 600;
+}
+
+
+.pie-chart-container canvas {
+  max-height: 100%;
+  border-radius: 8px;
+}
