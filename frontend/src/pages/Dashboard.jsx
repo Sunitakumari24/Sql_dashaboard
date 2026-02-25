@@ -6,6 +6,8 @@ import SummaryCards from '../component/SummaryCards';
 import ChartsSection from '../component/ChartsSection';
 import DetailedRecordsTable from '../component/DetailedRecordsTable';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 function Dashboard() {
   const [students, setStudents] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
@@ -22,7 +24,7 @@ function Dashboard() {
 
   useEffect(() => {
    
-    axios.get("http://localhost:5000/api/data")
+    axios.get(`${API_URL}/api/data`)
       .then(res => {
         const mappedData = res.data.map(student => ({
           id: student.id,
@@ -44,7 +46,7 @@ function Dashboard() {
       });
 
    
-    axios.get("http://localhost:5000/summary")
+    axios.get(`${API_URL}/summary`)
       .then(res => {
         setSummaryStats(res.data);
       })
@@ -53,7 +55,7 @@ function Dashboard() {
       });
 
   
-    axios.get("http://localhost:5000/pass-fail")
+    axios.get(`${API_URL}/pass-fail`)
       .then(res => {
         setPassFailData(res.data);
         console.log("Pass count:", res.data.pass_count);
@@ -64,11 +66,12 @@ function Dashboard() {
       });
 
   
-    axios.get("http://localhost:5000/monthly-data")
-      .then(res => setMonthlyData(res.data))
-      .catch(err => {
-        console.error(err);
-      });
+    // Monthly data endpoint not implemented yet
+    // axios.get("http://localhost:5000/monthly-data")
+    //   .then(res => setMonthlyData(res.data))
+    //   .catch(err => {
+    //     console.error(err);
+    //   });
   }, []);
 
   const gradedStudents = students.filter(s => parseFloat(s.grade) >= 0);
