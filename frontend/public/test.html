@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 SQL Dashboard - Connection Test</h1>
+    
+    <div class="test-box">
+        <h2>Environment Variable Check</h2>
+        <div id="env-check"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Backend Connection Test</h2>
+        <button onclick="testBackend()">Test Backend Connection</button>
+        <div id="backend-result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>CORS Test</h2>
+        <button onclick="testCORS()">Test CORS</button>
+        <div id="cors-result"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>All Endpoints Test</h2>
+        <button onclick="testAllEndpoints()">Test All Endpoints</button>
+        <div id="all-result"></div>
+    </div>
+
+    <script>
+        const BACKEND_URL = 'https://sql-dashboard-backend.onrender.com';
+
+        // Check environment variable
+        function checkEnv() {
+            const envDiv = document.getElementById('env-check');
+            const apiUrl = import.meta?.env?.VITE_API_URL;
+            
+            if (apiUrl) {
+                envDiv.innerHTML = `
+                    <div class="status success">
+                        ✅ Environment Variable Found<br>
+                        <strong>VITE_API_URL:</strong> ${apiUrl}
+                    </div>
+                `;
+            } else {
+                envDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Environment Variable NOT Found<br>
+                        <strong>Problem:</strong> VITE_API_URL is not set in Vercel<br>
+                        <strong>Solution:</strong> Set it in Vercel Dashboard → Settings → Environment Variables
+                    </div>
+                `;
+            }
+        }
+
+        // Test backend connection
+        async function testBackend() {
+            const resultDiv = document.getElementById('backend-result');
+            resultDiv.innerHTML = '<div class="status info">⏳ Testing backend connection...</div>';
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/data`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ Backend Connection Successful<br>
+                            <strong>Status:</strong> ${response.status}<br>
+                            <strong>Records Found:</strong> ${data.length}<br>
+                            <strong>Sample Data:</strong>
+                            <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ Backend Error<br>
+                            <strong>Status:</strong> ${response.status}<br>
+                            <strong>Error:</strong> ${JSON.stringify(data)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Connection Failed<br>
+                        <strong>Error:</strong> ${error.message}<br>
+                        <strong>Possible Causes:</strong>
+                        <ul>
+                            <li>CORS issue (FRONTEND_URL not set in Render)</li>
+                            <li>Backend is sleeping (Render free tier - wait 30 seconds)</li>
+                            <li>Network error</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        // Test CORS
+        async function testCORS() {
+            const resultDiv = document.getElementById('cors-result');
+            resultDiv.innerHTML = '<div class="status info">⏳ Testing CORS...</div>';
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/data`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.ok) {
+                    const corsHeaders = {
+                        'access-control-allow-origin': response.headers.get('access-control-allow-origin'),
+                        'access-control-allow-credentials': response.headers.get('access-control-allow-credentials'),
+                    };
+
+                    resultDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ CORS Configured Correctly<br>
+                            <strong>CORS Headers:</strong>
+                            <pre>${JSON.stringify(corsHeaders, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ CORS Error<br>
+                        <strong>Error:</strong> ${error.message}<br>
+                        <strong>Solution:</strong> Set FRONTEND_URL in Render to: https://sqldashaboard.vercel.app
+                    </div>
+                `;
+            }
+        }
+
+        // Test all endpoints
+        async function testAllEndpoints() {
+            const resultDiv = document.getElementById('all-result');
+            resultDiv.innerHTML = '<div class="status info">⏳ Testing all endpoints...</div>';
+
+            const endpoints = [
+                { name: 'API Data', url: '/api/data' },
+                { name: 'Summary', url: '/summary' },
+                { name: 'Pass/Fail', url: '/pass-fail' },
+            ];
+
+            let html = '';
+
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${BACKEND_URL}${endpoint.url}`);
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        html += `
+                            <div class="status success">
+                                ✅ <strong>${endpoint.name}</strong> - Working<br>
+                                <pre>${JSON.stringify(data, null, 2).substring(0, 200)}...</pre>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="status error">
+                                ❌ <strong>${endpoint.name}</strong> - Error ${response.status}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    html += `
+                        <div class="status error">
+                            ❌ <strong>${endpoint.name}</strong> - ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            resultDiv.innerHTML = html;
+        }
+
+        // Run environment check on load
+        checkEnv();
+    </script>
+</body>
+</html>
